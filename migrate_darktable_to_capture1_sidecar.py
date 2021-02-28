@@ -100,16 +100,18 @@ def read_c1_xmp_data(path: pathlib.Path):
 
 
 def check_requires_migration(dt: XmpData, c1: XmpData) -> RequiresMigration:
+    """It is more interesting to know if there are rating CONFLICTs or keywords require a MERGE, so those variants are prioritized as a result."""
     if dt.rating is not None and c1.rating is not None:
         if dt.rating != c1.rating:
             return RequiresMigration.CONFLICT
-    elif dt.rating is not None and c1.rating is None:
-            return RequiresMigration.YES
     
     if dt.keywords - c1.keywords:
         if c1.keywords:
             return RequiresMigration.MERGE
         else:
+            return RequiresMigration.YES
+    
+    if dt.rating is not None and c1.rating is None:
             return RequiresMigration.YES
 
     return RequiresMigration.NO
@@ -151,15 +153,16 @@ def do_migrate_keywords(dt: XmpData, c1: XmpData, content: str) -> str:
 
     content_lines = content.splitlines()
     
-    delete_start_index = content_lines.index("   <dc:subject>")
-    delete_end_index = content_lines.index("   </dc:subject>")
-    for _ in range(delete_end_index - delete_start_index + 1):
-        content_lines.pop(delete_start_index)
+    if check_requires_migration(dt, c1) is RequiresMigration.MERGE:
+        delete_start_index = content_lines.index("   <dc:subject>")
+        delete_end_index = content_lines.index("   </dc:subject>")
+        for _ in range(delete_end_index - delete_start_index + 1):
+            content_lines.pop(delete_start_index)
 
-    delete_start_index = content_lines.index("   <lightroom:hierarchicalSubject>")
-    delete_end_index = content_lines.index("   </lightroom:hierarchicalSubject>")
-    for _ in range(delete_end_index - delete_start_index + 1):
-        content_lines.pop(delete_start_index)
+        delete_start_index = content_lines.index("   <lightroom:hierarchicalSubject>")
+        delete_end_index = content_lines.index("   </lightroom:hierarchicalSubject>")
+        for _ in range(delete_end_index - delete_start_index + 1):
+            content_lines.pop(delete_start_index)
 
     insert_index = content_lines.index("  </rdf:Description>")
     content_lines.insert(insert_index, new_lines)
