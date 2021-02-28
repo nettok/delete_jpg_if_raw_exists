@@ -7,15 +7,15 @@ import pathlib
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Delete JPG files if equivalent ARW file exists.')
+    parser = argparse.ArgumentParser(description='Delete orphan XMP files.')
     parser.add_argument('path', type=str, help='The root directory to work on.')
     parser.add_argument('--recursive', action='store_true', help='Traverse directories recursively.')
-    parser.add_argument('--delete', action='store_true', help='Do delete the JPG files. By default it just shows the files that would be deleted.')
+    parser.add_argument('--delete', action='store_true', help='Do delete the XMP files. By default it just shows the files that would be deleted.')
     
     args = parser.parse_args()
 
     for path, file in traverse_path(args.path, args.recursive):
-        if fnmatch.fnmatch(file, '*.arw'):
+        if fnmatch.fnmatch(file, '*.xmp'):
             process_file(path, file, delete=args.delete)
 
 
@@ -31,18 +31,15 @@ def traverse_path(path, recursive=False):
 
 
 def process_file(path, file, delete=False):
-    raw_file_path = pathlib.Path(*path, file)
-    jpg_file_path = raw_file_path.with_suffix('.jpg')
-    jpg_sidecar_file_path = raw_file_path.with_suffix('.jpg.xmp')
-    
-    if jpg_file_path.exists():
+    xmp_file_path = pathlib.Path(*path, file)
+    derived_from_file_path = xmp_file_path.with_suffix("")
+
+    if derived_from_file_path.suffix and not derived_from_file_path.exists():
         if delete:
-            os.remove(jpg_file_path)
-            print(jpg_file_path, '(delete)')
-            if jpg_sidecar_file_path.exists():
-                os.remove(jpg_sidecar_file_path)
+            os.remove(xmp_file_path)
+            print(xmp_file_path, '(delete)')
         else:
-            print(jpg_file_path, '(show)')
+            print(xmp_file_path, '(show)')
 
 
 if __name__ == "__main__":
