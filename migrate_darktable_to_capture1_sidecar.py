@@ -142,12 +142,12 @@ def do_migrate_keywords(dt: XmpData, c1: XmpData, content: str) -> str:
 
     keywords = dt.keywords.union(c1.keywords)
 
-    keywords_lines = '\n'.join([f"     <rdf:li>{kw}</rdf:li>" for kw in keywords])
+    keywords_lines = '\n'.join([f"     <rdf:li>{kw}</rdf:li>" for kw in keywords]) + '\n'
     
-    new_lines =  "   <dc:subject>\n    <rdf:Bag>"
+    new_lines =  "   <dc:subject>\n    <rdf:Bag>\n"
     new_lines += keywords_lines
-    new_lines += "    </rdf:Bag>\n   </dc:subject>"
-    new_lines =  "   <lightroom:hierarchicalSubject>\n    <rdf:Bag>"
+    new_lines += "    </rdf:Bag>\n   </dc:subject>\n"
+    new_lines += "   <lightroom:hierarchicalSubject>\n    <rdf:Bag>\n"
     new_lines += keywords_lines
     new_lines += "    </rdf:Bag>\n   </lightroom:hierarchicalSubject>"
 
