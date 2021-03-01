@@ -121,6 +121,7 @@ def do_migrate(dt: XmpData, c1: XmpData, c1_xmp_file_path: pathlib.Path):
     content = c1_xmp_file_path.read_text()
     content = do_migrate_rating(dt, c1, content)
     content = do_migrate_keywords(dt, c1, content)
+    content = update_xml_namespaces(content)
     c1_xmp_file_path.write_text(content)
 
 
@@ -168,6 +169,13 @@ def do_migrate_keywords(dt: XmpData, c1: XmpData, content: str) -> str:
     content_lines.insert(insert_index, new_lines)
 
     return '\n'.join(content_lines)
+
+
+def update_xml_namespaces(content: str) -> str:
+    return content\
+        .replace('    xmlns:dc="http://purl.org/dc/elements/1.1/">', '    xmlns:dc="http://purl.org/dc/elements/1.1/"\n    xmlns:xmp="http://ns.adobe.com/xap/1.0/"\n    xmlns:lightroom="http://ns.adobe.com/lightroom/1.0/">')\
+        .replace('    xmlns:dc="http://purl.org/dc/elements/1.1/"\n    xmlns:lightroom="http://ns.adobe.com/lightroom/1.0/">', '    xmlns:dc="http://purl.org/dc/elements/1.1/"\n    xmlns:xmp="http://ns.adobe.com/xap/1.0/"\n    xmlns:lightroom="http://ns.adobe.com/lightroom/1.0/">')\
+        .replace('    xmlns:dc="http://purl.org/dc/elements/1.1/"\n    xmlns:xmp="http://ns.adobe.com/xap/1.0/">', '    xmlns:dc="http://purl.org/dc/elements/1.1/"\n    xmlns:xmp="http://ns.adobe.com/xap/1.0/"\n    xmlns:lightroom="http://ns.adobe.com/lightroom/1.0/">')
 
 
 if __name__ == "__main__":
